@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>選課系統 | 大學課程選課與排課 DEMO</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- 1. 全局頂部導覽列 (純文字無 Icon 四個分頁) -->
+  <header class="global-nav">
+    <div class="brand">
+      選課系統 CourseSelect
+    </div>
+
+    <!-- 頂部 Navbar 四大分頁 -->
+    <nav class="nav-tabs">
+      <a href="#home" class="nav-tab-item active" data-tab="tab-home">
+        首頁 (公告與消息)
+      </a>
+      <a href="#search" class="nav-tab-item" data-tab="tab-search">
+        選課與檢索
+      </a>
+      <a href="#schedule-credits" class="nav-tab-item" data-tab="tab-schedule-credits">
+        週課表與學分摘要
+      </a>
+      <a href="#faq" class="nav-tab-item" data-tab="tab-faq">
+        常見問題與規則
+      </a>
+    </nav>
+
+    <div class="user-badge">
+      <span>資工三A <strong>王小明</strong> (110590012)</span>
+    </div>
+  </header>
+
+  <!-- 2. 分頁 1：首頁 (課程公告與最新消息) -->
+  <section class="tab-content-view active" id="tab-home">
+    <div class="view-header">
+      <div>
+        <h1>首頁 · 課程公告與最新消息</h1>
+        <p>114 學年度 第一學期 · 教務處課務組即時公告</p>
+      </div>
+    </div>
+
+    <div class="announcement-layout">
+      <!-- 左側：最新公告列表 -->
+      <div class="announcement-list">
+        <div class="news-card">
+          <div class="news-meta">
+            <span class="news-tag urgent">重要公告</span>
+            <span class="news-date">2026-09-10</span>
+          </div>
+          <div class="news-title">114學年度第一學期初選登記與衝堂防呆機制說明</div>
+          <div class="news-body">
+            請全校同學於 09/15 前完成線上初選登記。本系統已啟用「即時衝堂預警」與「學分門檻限制檢查」，點擊加選時若與已選時段衝突將自動阻擋並提示。
+          </div>
+        </div>
+
+        <div class="news-card">
+          <div class="news-meta">
+            <span class="news-tag">課程異動</span>
+            <span class="news-date">2026-09-08</span>
+          </div>
+          <div class="news-title">【資訊工程學系】「資料庫系統」授課教室更動通知</div>
+          <div class="news-body">
+            由陳建宏教授授課之「資料庫系統（週三 3-4 節）」上課地點更換至資訊館 R204 演講廳，請選課同學注意上課地點異動。
+          </div>
+        </div>
+
+        <div class="news-card">
+          <div class="news-meta">
+            <span class="news-tag">通識須知</span>
+            <span class="news-date">2026-09-05</span>
+          </div>
+          <div class="news-title">通識教育中心：114-1 學期通識核心課程採計原則與選課限制</div>
+          <div class="news-body">
+            通識核心課程最高採計 4 學分，非本系專業選修不得抵免通識學分。選課前請至【常見問題與規則】分頁參閱詳細抵免條款。
+          </div>
+        </div>
+      </div>
+
+      <!-- 右側：重要時程倒數 -->
+      <aside class="sidebar-summary">
+        <div class="summary-card">
+          <h3>初選登記倒數</h3>
+          <div class="credit-big-number" style="color: var(--color-accent-coral);">3 <span>天後截止</span></div>
+          <p style="font-size: 13px; color: var(--color-body-muted); margin: 10px 0 16px 0;">初選登記截止時間為 2026-09-13 23:59，請把握時間安排課表。</p>
+          <button class="btn-primary" style="width: 100%; text-align: center; font-size: 14px;" onclick="switchTab('tab-search')">前往選課與檢索 →</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 3. 分頁 2：選課 (搜尋、科系篩選、9張卡片分頁、點擊查看細節) -->
+  <section class="tab-content-view" id="tab-search">
+    <div class="view-header">
+      <div>
+        <h1>課程檢索與加選</h1>
+        <p>支援關鍵字、開課系所、修業類別多條件篩選與即時衝堂驗證</p>
+      </div>
+    </div>
+
+    <div class="apple-card">
+      <div class="search-bar-section">
+        <div class="search-input-wrapper">
+          <input type="text" class="search-input" id="searchInput" placeholder="搜尋課程名稱、授課教師、教室代號或課號...">
+        </div>
+        <div class="filter-group">
+          <select class="apple-select" id="filterDepartment">
+            <option value="ALL">所有開課系所</option>
+            <option value="資訊工程學系">資訊工程學系</option>
+            <option value="電機工程學系">電機工程學系</option>
+            <option value="通識教育中心">通識教育中心</option>
+          </select>
+
+          <select class="apple-select" id="filterCategory">
+            <option value="ALL">所有修業類別</option>
+            <option value="REQUIRED">系定必修</option>
+            <option value="ELECTIVE">專業選修</option>
+            <option value="GENERAL">通識核心</option>
+          </select>
+
+          <select class="apple-select" id="filterStatus">
+            <option value="ALL">名額狀態 (全部)</option>
+            <option value="AVAILABLE">可加選</option>
+            <option value="WARNING">即將額滿</option>
+            <option value="FULL">已額滿</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="course-grid" id="courseGridContainer">
+        <!-- JS 動態繪製課程卡片 -->
+      </div>
+
+      <div class="pagination-container" id="paginationContainer">
+        <!-- JS 動態繪製頁碼 -->
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 分頁 3：週課表與學分摘要 (將週課表放在審查清單上方) -->
+  <section class="tab-content-view" id="tab-schedule-credits">
+    <div class="view-header">
+      <div>
+        <h1>週課表與學分摘要</h1>
+        <p>整合學分類別門檻、視覺化週課表與已選課程審查清單</p>
+      </div>
+      <div class="header-action-group">
+        <button class="btn-primary accent" id="importDemoBtn" style="padding: 6px 16px; font-size: 13px;">一鍵匯入預設課程</button>
+        <button class="btn-secondary" id="resetScheduleBtn" style="padding: 6px 14px; font-size: 13px;">重置課表</button>
+      </div>
+    </div>
+
+    <div class="combined-schedule-credits">
+      <!-- 頂部：三類學分統計 -->
+      <div class="credits-dashboard-grid">
+        <div class="credit-cat-box">
+          <div class="cat-header">
+            <h3>系定必修</h3>
+            <span class="status-pill available">進度正常</span>
+          </div>
+          <div class="big-count" id="creditReqBig">9 / 12</div>
+          <div class="desc">已選：演算法 (3)、作業系統 (3)、計算機網路 (3)</div>
+        </div>
+        <div class="credit-cat-box">
+          <div class="cat-header">
+            <h3>專業選修</h3>
+            <span class="status-pill available">進度正常</span>
+          </div>
+          <div class="big-count" id="creditEleBig">6 / 9</div>
+          <div class="desc">已選：人工智慧導論 (3)、網頁前端開發技術 (3)</div>
+        </div>
+        <div class="credit-cat-box">
+          <div class="cat-header">
+            <h3>通識核心</h3>
+            <span class="status-pill warning">尚缺 1 學分</span>
+          </div>
+          <div class="big-count" id="creditGenBig">3 / 4</div>
+          <div class="desc">已選：心理學導論 (3)</div>
+        </div>
+      </div>
+
+      <!-- 中段：視覺化週課表排程網格 (放在審查清單上方 - 需求 2) -->
+      <div class="apple-card">
+        <div class="card-header">
+          <h2>視覺化週課表排程 (週一 ~ 週五)</h2>
+          <span style="font-size: 13px; color: var(--color-body-muted);" id="homeEnrolledCount">已排 6 門課程</span>
+        </div>
+        <div class="timetable-container">
+          <div class="timetable-grid" id="timetableGrid">
+            <!-- JS 動態生成 5 天 x 8 節時段 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 下段：已選課程與學分審查清單表格 -->
+      <div class="apple-card">
+        <div class="card-header">
+          <h2>已選課程與學分審查清單</h2>
+        </div>
+        <div style="padding: 24px;" id="enrolledTableContainer">
+          <!-- JS 動態呈現審查清單 -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 分頁 4：常見問題與規則 (Q&A) -->
+  <section class="tab-content-view" id="tab-faq">
+    <div class="view-header">
+      <div>
+        <h1>常見問題與選課規則 (Q&A)</h1>
+        <p>解答選課疑難雜症、衝堂規定與學分抵免條款</p>
+      </div>
+    </div>
+
+    <div class="faq-layout">
+      <!-- 左側：Q&A 折疊選單 (Accordion) -->
+      <div class="faq-accordion">
+        <div class="faq-item active">
+          <div class="faq-question">Q1. 如果發現加選課程與既有課表時段衝堂該如何處理？</div>
+          <div class="faq-answer">
+            系統設有自動化衝堂阻擋機制。若欲加選的課程時段與已加選課程衝突（例如同一天同一節次），系統將彈出警告並禁止重複登記。同學需先至【週課表與學分摘要】頁面退選原時段課程，方可加選新課程。
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Q2. 單學期選課學分的上限與下限規定為何？</div>
+          <div class="faq-answer">
+            依據教務處選課辦法，各學系學生每學期最低修習學分為 12 學分，上限為 25 學分。若有前一學期成績優良符合超修資格者，可提出人工超修申請。
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Q3. 課程顯示「已額滿 (0 人)」時是否還有機會選上？</div>
+          <div class="faq-answer">
+            額滿課程可於初選階段結束後之「二次加退選階段」觀察是否有其他同學退選空出名額。若開課教師同意加簽，同學可持紙本/線上加簽單進行人工加簽。
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">Q4. 通識核心課程的修習限制有哪些？</div>
+          <div class="faq-answer">
+            通識核心課程涵蓋人文、社會、自然等向度，單學期通識上限建議為 4 學分，且不得與本系專業必修重複抵免。
+          </div>
+        </div>
+      </div>
+
+      <!-- 右側：選課限制條款卡片 -->
+      <aside class="sidebar-summary">
+        <div class="rules-card">
+          <h3>選課基本規範與審查條款</h3>
+          <ul class="rules-list">
+            <li><strong>學分上限</strong>：每學期最多 25 學分。</li>
+            <li><strong>最低門檻</strong>：每學期至少 12 學分。</li>
+            <li><strong>衝堂限制</strong>：同一時段不可重複選課。</li>
+            <li><strong>退選紀錄</strong>：初選階段退選不留成績單紀錄。</li>
+            <li><strong>加簽審核</strong>：額滿課程需任課教師親筆簽章。</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 6. 衝堂警示 Modal -->
+  <div class="modal-overlay" id="conflictModal">
+    <div class="apple-modal">
+      <h3>選課衝堂阻擋提示</h3>
+      <p id="modalMessage">無法加選【資料庫系統】。該課程時段（週三 3-4 節）與已選課程【演算法】發生衝突。</p>
+      <button class="btn-primary" id="closeModalBtn" style="width: 100%;">我知道了</button>
+    </div>
+  </div>
+
+  <!-- 7. 加大版課程細節 Inspector Modal -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="apple-modal detail-modal">
+      <div class="detail-header-top">
+        <div>
+          <span class="dept-code-tag" id="detailDeptCode">資訊工程學系 · CS301 · 系定必修</span>
+          <h3 id="detailTitle">演算法 Algorithms</h3>
+          <div class="course-subtitle" id="detailSubtitle">114學年度第1學期 · 3學分</div>
+        </div>
+        <span class="status-pill available" id="detailStatusPill">可加選 (剩 12 人)</span>
+      </div>
+
+      <div class="spec-grid">
+        <div class="spec-item">
+          <label>授課教師</label>
+          <span id="detailTeacher">林哲安 教授</span>
+        </div>
+        <div class="spec-item">
+          <label>上課地點與時段</label>
+          <span id="detailTimeRoom">R301 (資訊館) · 週三 3-4 節</span>
+        </div>
+        <div class="spec-item">
+          <label>先修科目要求</label>
+          <span id="detailPrereq">程式設計 (一)、資料結構</span>
+        </div>
+        <div class="spec-item">
+          <label>教師聯絡 & OFFICE HOURS</label>
+          <span id="detailContact">chean@cs.edu.tw · 週二 14:00-16:00</span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>選課名額與熱門度</h4>
+        <div class="capacity-progress-container">
+          <div class="capacity-bar-outer">
+            <div class="capacity-bar-inner" id="detailCapBar" style="width: 80%;"></div>
+          </div>
+          <span style="font-size: 13px; font-weight: 600; color: var(--color-ink);" id="detailCapText">48 / 60 人 (80%)</span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>課程目標與大綱 (Syllabus)</h4>
+        <p id="detailSyllabus">本課程介紹核心演算法設計範式，包含分治法 (Divide and Conquer)、動態規劃 (Dynamic Programming)、貪婪演算法與圖形演算法分析。養成解決複雜問題與複雜度分析能力。</p>
+      </div>
+
+      <div class="detail-section">
+        <h4>成績算分比例 (Grading Policy)</h4>
+        <p id="detailGrading">期中考 30%、期末考 35%、作業與實作 25%、課堂參與 10%</p>
+      </div>
+
+      <div class="detail-section">
+        <h4>參考教材與指定書目 (Textbooks)</h4>
+        <p id="detailTextbook">Introduction to Algorithms (4th Edition) - Cormen, Leiserson, Rivest, Stein (CLRS)</p>
+      </div>
+
+      <div class="card-actions" style="margin-top: 24px; justify-content: flex-end;">
+        <button class="btn-secondary" id="closeDetailModalBtn">關閉視窗</button>
+        <div id="detailActionBtnContainer"></div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <script src="app.js"></script>
+</body>
+</html>
