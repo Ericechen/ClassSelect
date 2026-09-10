@@ -21,7 +21,7 @@ const COURSES = [
     status: 'AVAILABLE',
     statusText: '可加選 (剩 12 人)',
     prereq: '程式設計 (一)、資料結構',
-    syllabus: '本課程介紹核心演算法設計範式，包含分治法 (Divide and Conquer)、動態規劃 (Dynamic Programming)、貪婪演算法與圖形演算法分析。養成解決複雜問題與複雜度分析能力。',
+    syllabus: '涵蓋分治法、動態規劃、貪婪演算法與圖形演算法，著重複雜度分析與實際問題解題。',
     grading: '期中考 30%、期末考 35%、程式作業 25%、出席 10%',
     textbook: 'Introduction to Algorithms (4th Edition) - CLRS'
   },
@@ -46,7 +46,7 @@ const COURSES = [
     status: 'WARNING',
     statusText: '即將額滿 (剩 5 人)',
     prereq: '資料結構',
-    syllabus: '探討關聯式資料庫架構、SQL 語法優化、實體關聯圖 (ERD) 設計、交易管理 (ACID) 與 NoSQL 資料庫導論。結合作業系統儲存機制與索引設計。',
+    syllabus: '關聯式資料庫架構、SQL 語法與效能調校、ERD 設計、交易處理 (ACID)，另含 NoSQL 導論。',
     grading: '期中專案 30%、期末考 35%、隨堂測驗 25%、出席 10%',
     textbook: 'Database System Concepts (7th Edition) - Silberschatz'
   },
@@ -71,7 +71,7 @@ const COURSES = [
     status: 'AVAILABLE',
     statusText: '可加選 (剩 8 人)',
     prereq: '計算機組織、資料結構',
-    syllabus: '研討作業系統核心概念：行程與執行緒同步、記憶體管理 (Virtual Memory)、檔案系統與系統呼叫實作。包含 Linux Kernel 機制導讀。',
+    syllabus: '行程與執行緒同步、記憶體管理 (Virtual Memory)、檔案系統、系統呼叫實作，搭配 Linux Kernel 機制說明。',
     grading: 'Lab 實作作業 40%、期中考 25%、期末考 25%、出席 10%',
     textbook: 'Operating System Concepts (10th Edition)'
   },
@@ -96,7 +96,7 @@ const COURSES = [
     status: 'AVAILABLE',
     statusText: '可加選 (剩 20 人)',
     prereq: '無特殊限制，建議具備 C/C++ 基礎',
-    syllabus: '深入網際網路 OSI 七層模型與 TCP/IP 協定堆疊，包含封包路由、Socket 程式設計與網路安全基礎。搭配 Wireshark 實戰分析。',
+    syllabus: 'OSI 七層與 TCP/IP 協定、封包路由、Socket 程式設計、網路安全基礎，搭配 Wireshark 實際分析。',
     grading: 'Socket 專案 30%、期中考 30%、期末考 30%、平時評量 10%',
     textbook: 'Computer Networking: A Top-Down Approach (8th Edition)'
   },
@@ -121,7 +121,7 @@ const COURSES = [
     status: 'AVAILABLE',
     statusText: '可加選 (剩 20 人)',
     prereq: '基礎物理、微積分',
-    syllabus: '介紹布林代數、邏輯閘閘級優化、組合邏輯與順序邏輯電路設計、有限狀態機 (FSM) 與 Verilog HDL 電路模擬。',
+    syllabus: '布林代數、邏輯閘優化、組合與順序邏輯電路、有限狀態機 (FSM)，以 Verilog HDL 模擬實作。',
     grading: 'Verilog 實作 35%、期中考 30%、期末考 30%、平時測驗 5%',
     textbook: 'Digital Design (6th Edition) - M. Morris Mano'
   },
@@ -146,7 +146,7 @@ const COURSES = [
     status: 'WARNING',
     statusText: '即將額滿 (剩 2 人)',
     prereq: '無先修限制 (適合全校學生)',
-    syllabus: '探索人類行為與心理歷程，涵蓋認知心理學、神經科學基礎、發展心理學與社會心理學現象。提升自我覺察與溝通能力。',
+    syllabus: '認知心理學、神經科學基礎、發展心理學與社會心理學，以實際案例探討人類行為與心理歷程。',
     grading: '期中測驗 30%、期末報告 40%、心得作業 20%、討論 10%',
     textbook: 'Psychology (13th Edition) - David G. Myers'
   },
@@ -171,7 +171,7 @@ const COURSES = [
     status: 'FULL',
     statusText: '已額滿 (0 人)',
     prereq: '無先修限制',
-    syllabus: '引入批判性思考與倫理學架構，討論現代科技倫理、人工智慧對社會影響與正義論命題。',
+    syllabus: '批判性思考與倫理學架構，討論科技倫理、AI 對社會的影響與正義論相關議題。',
     grading: '課堂討論與辯論 40%、期中心得 30%、期末論文 30%',
     textbook: 'Justice: What\'s the Right Thing to Do? - Sandel'
   },
@@ -196,7 +196,7 @@ const COURSES = [
     status: 'AVAILABLE',
     statusText: '可加選 (剩 15 人)',
     prereq: '線性代數、微積分、Python',
-    syllabus: '介紹機器學習與深度學習基本原理，包括監督式學習、神經網路架構與 Python/PyTorch 實務範例。專題導向開發。',
+    syllabus: '機器學習與深度學習基本原理，包括監督式學習、神經網路架構，以 Python/PyTorch 實作專題。',
     grading: 'AI 專案實作 40%、期中考 25%、期末考 25%、出席 10%',
     textbook: 'Artificial Intelligence: A Modern Approach (4th Edition)'
   },
@@ -221,7 +221,7 @@ const COURSES = [
     status: 'AVAILABLE',
     statusText: '可加選 (剩 25 人)',
     prereq: 'HTML/CSS 基礎、程式設計基礎',
-    syllabus: '現代 Web 前端技術實戰：HTML5/CSS3/JavaScript ES6+，UI/UX 設計原則與 React/Vite 框架整合應用。打造高質感響應式應用程式。',
+    syllabus: 'HTML5/CSS3/JavaScript ES6+ 實作，UI/UX 設計原則與React/Vite 整合應用。',
     grading: '期末 Web 專案 50%、實作作業 30%、課堂參與 20%',
     textbook: 'JavaScript: The Definitive Guide (7th Edition)'
   },
@@ -246,7 +246,7 @@ const COURSES = [
     status: 'AVAILABLE',
     statusText: '可加選 (剩 8 人)',
     prereq: '物件導向程式設計',
-    syllabus: '講授敏捷開發 (Agile/Scrum)、Design Patterns 設計模式、CI/CD 自動化測試與軟體架構品質評估。',
+    syllabus: '敏捷開發 (Agile/Scrum)、Design Patterns、CI/CD 自動化測試與軟體架構品質評估。',
     grading: '敏捷團隊專案 45%、期中考 25%、期末考 25%、出席 5%',
     textbook: 'Clean Code: A Handbook of Agile Software Craftsmanship'
   },
@@ -271,7 +271,7 @@ const COURSES = [
     status: 'WARNING',
     statusText: '即將額滿 (剩 5 人)',
     prereq: '微分方程、線性代數',
-    syllabus: '連續與離散時間訊號、傅立葉級數 (FS)、傅立葉轉換 (FT)、Laplace 轉換與 Z 轉換應用分析。',
+    syllabus: '連續與離散時間訊號、傅立葉級數/轉換、Laplace 轉換、Z 轉換應用。',
     grading: '期中考 35%、期末考 35%、MATLAB 實驗 20%、平時測驗 10%',
     textbook: 'Signals and Systems (2nd Edition) - Oppenheim & Willsky'
   },
@@ -296,7 +296,7 @@ const COURSES = [
     status: 'AVAILABLE',
     statusText: '可加選 (剩 18 人)',
     prereq: '無先修限制',
-    syllabus: '探討生成式藝術 (Generative Art)、互動裝置、新媒體展演與演算法視覺音樂之美學脈絡。',
+    syllabus: '生成式藝術 (Generative Art)、互動裝置、新媒體展演與演算法視覺/音樂美學。',
     grading: '期末新媒體創作 50%、展覽心得 30%、課堂參與 20%',
     textbook: 'Generative Design: Visualize, Program, and Create with Processing'
   }
@@ -640,7 +640,7 @@ window.openCourseDetail = function(courseId) {
   if (isEnrolled) {
     actionContainer.innerHTML = `<button class="btn-danger" onclick="dropCourse('${course.id}'); closeCourseDetail();">退選此課程</button>`;
   } else {
-    actionContainer.innerHTML = `<button class="btn-primary" ${isFull ? 'disabled' : ''} onclick="addCourse('${course.id}'); closeCourseDetail();">${isFull ? '已額滿' : '立即加選此課程'}</button>`;
+    actionContainer.innerHTML = `<button class="btn-primary" ${isFull ? 'disabled' : ''} onclick="addCourse('${course.id}'); closeCourseDetail();">${isFull ? '已額滿' : '加選'}</button>`;
   }
 
   document.getElementById('detailModal').classList.add('active');

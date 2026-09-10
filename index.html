@@ -39,8 +39,8 @@
   <section class="tab-content-view active" id="tab-home">
     <div class="view-header">
       <div>
-        <h1>首頁 · 課程公告與最新消息</h1>
-        <p>114 學年度 第一學期 · 教務處課務組即時公告</p>
+        <h1>課程公告</h1>
+        <p>114 學年度第一學期</p>
       </div>
     </div>
 
@@ -52,9 +52,9 @@
             <span class="news-tag urgent">重要公告</span>
             <span class="news-date">2026-09-10</span>
           </div>
-          <div class="news-title">114學年度第一學期初選登記與衝堂防呆機制說明</div>
+          <div class="news-title">114學年度第一學期初選登記說明</div>
           <div class="news-body">
-            請全校同學於 09/15 前完成線上初選登記。本系統已啟用「即時衝堂預警」與「學分門檻限制檢查」，點擊加選時若與已選時段衝突將自動阻擋並提示。
+            請於 09/15 前完成線上初選登記。加選時若與已選課程時段衝堂，系統會擋下並提示衝突的課程。
           </div>
         </div>
 
@@ -63,9 +63,9 @@
             <span class="news-tag">課程異動</span>
             <span class="news-date">2026-09-08</span>
           </div>
-          <div class="news-title">【資訊工程學系】「資料庫系統」授課教室更動通知</div>
+          <div class="news-title">【資工系】資料庫系統 教室異動</div>
           <div class="news-body">
-            由陳建宏教授授課之「資料庫系統（週三 3-4 節）」上課地點更換至資訊館 R204 演講廳，請選課同學注意上課地點異動。
+            陳建宏教授「資料庫系統」（週三 3-4 節）教室改至資訊館 R204，請留意。
           </div>
         </div>
 
@@ -74,9 +74,9 @@
             <span class="news-tag">通識須知</span>
             <span class="news-date">2026-09-05</span>
           </div>
-          <div class="news-title">通識教育中心：114-1 學期通識核心課程採計原則與選課限制</div>
+          <div class="news-title">通識中心：114-1 通識核心課程選課須知</div>
           <div class="news-body">
-            通識核心課程最高採計 4 學分，非本系專業選修不得抵免通識學分。選課前請至【常見問題與規則】分頁參閱詳細抵免條款。
+            通識核心課程最多採計 4 學分，不得以專業選修抵免。詳細規定請參考「常見問題與規則」分頁。
           </div>
         </div>
       </div>
@@ -86,8 +86,8 @@
         <div class="summary-card">
           <h3>初選登記倒數</h3>
           <div class="credit-big-number" style="color: var(--color-accent-coral);">3 <span>天後截止</span></div>
-          <p style="font-size: 13px; color: var(--color-body-muted); margin: 10px 0 16px 0;">初選登記截止時間為 2026-09-13 23:59，請把握時間安排課表。</p>
-          <button class="btn-primary" style="width: 100%; text-align: center; font-size: 14px;" onclick="switchTab('tab-search')">前往選課與檢索 →</button>
+          <p style="font-size: 13px; color: var(--color-body-muted); margin: 10px 0 16px 0;">截止時間：2026-09-13 23:59</p>
+          <button class="btn-primary" style="width: 100%; text-align: center; font-size: 14px;" onclick="switchTab('tab-search')">開始選課</button>
         </div>
       </aside>
     </div>
@@ -97,8 +97,8 @@
   <section class="tab-content-view" id="tab-search">
     <div class="view-header">
       <div>
-        <h1>課程檢索與加選</h1>
-        <p>支援關鍵字、開課系所、修業類別多條件篩選與即時衝堂驗證</p>
+        <h1>選課</h1>
+        <p>依課程名稱、系所或類別查詢可選課程</p>
       </div>
     </div>
 
@@ -154,8 +154,8 @@
   <section class="tab-content-view" id="tab-schedule-credits">
     <div class="view-header">
       <div>
-        <h1>週課表與學分摘要</h1>
-        <p>整合學分類別門檻、視覺化週課表與已選課程審查清單</p>
+        <h1>週課表與學分</h1>
+        <p>查看已選課程、學分進度及每週時間表</p>
       </div>
       <div class="header-action-group">
         <button class="btn-primary accent" id="importDemoBtn" style="padding: 6px 16px; font-size: 13px;">一鍵匯入預設課程</button>
@@ -195,7 +195,7 @@
       <!-- 中段：視覺化週課表排程網格 (放在審查清單上方 - 需求 2) -->
       <div class="apple-card">
         <div class="card-header">
-          <h2>視覺化週課表排程 (週一 ~ 週五)</h2>
+          <h2>週課表</h2>
           <span style="font-size: 13px; color: var(--color-body-muted);" id="homeEnrolledCount">已排 6 門課程</span>
         </div>
         <div class="timetable-container">
@@ -208,7 +208,7 @@
       <!-- 下段：已選課程與學分審查清單表格 -->
       <div class="apple-card">
         <div class="card-header">
-          <h2>已選課程與學分審查清單</h2>
+          <h2>已選課程</h2>
         </div>
         <div style="padding: 24px;" id="enrolledTableContainer">
           <!-- JS 動態呈現審查清單 -->
@@ -221,8 +221,8 @@
   <section class="tab-content-view" id="tab-faq">
     <div class="view-header">
       <div>
-        <h1>常見問題與選課規則 (Q&A)</h1>
-        <p>解答選課疑難雜症、衝堂規定與學分抵免條款</p>
+        <h1>常見問題 (Q&A)</h1>
+        <p>選課相關問題與學分規定說明</p>
       </div>
     </div>
 
@@ -230,30 +230,30 @@
       <!-- 左側：Q&A 折疊選單 (Accordion) -->
       <div class="faq-accordion">
         <div class="faq-item active">
-          <div class="faq-question">Q1. 如果發現加選課程與既有課表時段衝堂該如何處理？</div>
+          <div class="faq-question">Q1. 加選時發現衝堂怎麼辦？</div>
           <div class="faq-answer">
-            系統設有自動化衝堂阻擋機制。若欲加選的課程時段與已加選課程衝突（例如同一天同一節次），系統將彈出警告並禁止重複登記。同學需先至【週課表與學分摘要】頁面退選原時段課程，方可加選新課程。
+            系統會檢查時段衝突，衝堂時會跳出提示並擋下加選。請先到「週課表與學分」退選衝突的課程，再加選新課。
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Q2. 單學期選課學分的上限與下限規定為何？</div>
+          <div class="faq-question">Q2. 每學期學分上下限是多少？</div>
           <div class="faq-answer">
-            依據教務處選課辦法，各學系學生每學期最低修習學分為 12 學分，上限為 25 學分。若有前一學期成績優良符合超修資格者，可提出人工超修申請。
+            每學期最少 12 學分、最多 25 學分。前學期成績達超修標準者可另外申請。
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Q3. 課程顯示「已額滿 (0 人)」時是否還有機會選上？</div>
+          <div class="faq-question">Q3. 已額滿的課還有機會選上嗎？</div>
           <div class="faq-answer">
-            額滿課程可於初選階段結束後之「二次加退選階段」觀察是否有其他同學退選空出名額。若開課教師同意加簽，同學可持紙本/線上加簽單進行人工加簽。
+            可以在二次加退選期間看有沒有人退選。也可以找授課老師加簽（紙本或線上加簽單）。
           </div>
         </div>
 
         <div class="faq-item">
-          <div class="faq-question">Q4. 通識核心課程的修習限制有哪些？</div>
+          <div class="faq-question">Q4. 通識核心有什麼選課限制？</div>
           <div class="faq-answer">
-            通識核心課程涵蓋人文、社會、自然等向度，單學期通識上限建議為 4 學分，且不得與本系專業必修重複抵免。
+            通識包含人文、社會、自然等類別，每學期建議最多選 4 學分，不能和系上必修互抵。
           </div>
         </div>
       </div>
@@ -261,7 +261,7 @@
       <!-- 右側：選課限制條款卡片 -->
       <aside class="sidebar-summary">
         <div class="rules-card">
-          <h3>選課基本規範與審查條款</h3>
+          <h3>選課規定</h3>
           <ul class="rules-list">
             <li><strong>學分上限</strong>：每學期最多 25 學分。</li>
             <li><strong>最低門檻</strong>：每學期至少 12 學分。</li>
@@ -277,9 +277,9 @@
   <!-- 6. 衝堂警示 Modal -->
   <div class="modal-overlay" id="conflictModal">
     <div class="apple-modal">
-      <h3>選課衝堂阻擋提示</h3>
+      <h3>時段衝堂</h3>
       <p id="modalMessage">無法加選【資料庫系統】。該課程時段（週三 3-4 節）與已選課程【演算法】發生衝突。</p>
-      <button class="btn-primary" id="closeModalBtn" style="width: 100%;">我知道了</button>
+      <button class="btn-primary" id="closeModalBtn" style="width: 100%;">確認</button>
     </div>
   </div>
 
