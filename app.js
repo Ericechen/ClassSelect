@@ -489,6 +489,7 @@ const paginationContainer = document.getElementById('paginationContainer');
 const searchInput = document.getElementById('searchInput');
 const filterDepartment = document.getElementById('filterDepartment');
 const filterCategory = document.getElementById('filterCategory');
+const filterDay = document.getElementById('filterDay');
 const filterStatus = document.getElementById('filterStatus');
 
 function renderCourseGrid() {
@@ -497,14 +498,16 @@ function renderCourseGrid() {
   const keyword = searchInput.value.trim().toLowerCase();
   const deptFilter = filterDepartment.value;
   const categoryFilter = filterCategory.value;
+  const dayFilter = filterDay ? filterDay.value : 'ALL';
   const statusFilter = filterStatus.value;
 
   const filtered = COURSES.filter(course => {
     const matchKeyword = !keyword || course.name.toLowerCase().includes(keyword) || course.englishName.toLowerCase().includes(keyword) || course.teacher.toLowerCase().includes(keyword) || course.id.toLowerCase().includes(keyword);
     const matchDept = deptFilter === 'ALL' || course.department === deptFilter;
     const matchCategory = categoryFilter === 'ALL' || course.category === categoryFilter;
+    const matchDay = dayFilter === 'ALL' || course.day === parseInt(dayFilter, 10);
     const matchStatus = statusFilter === 'ALL' || course.status === statusFilter;
-    return matchKeyword && matchDept && matchCategory && matchStatus;
+    return matchKeyword && matchDept && matchCategory && matchDay && matchStatus;
   });
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
@@ -703,6 +706,7 @@ function updateAllViews() {
 if (searchInput) searchInput.addEventListener('input', () => { currentPage = 1; renderCourseGrid(); });
 if (filterDepartment) filterDepartment.addEventListener('change', () => { currentPage = 1; renderCourseGrid(); });
 if (filterCategory) filterCategory.addEventListener('change', () => { currentPage = 1; renderCourseGrid(); });
+if (filterDay) filterDay.addEventListener('change', () => { currentPage = 1; renderCourseGrid(); });
 if (filterStatus) filterStatus.addEventListener('change', () => { currentPage = 1; renderCourseGrid(); });
 
 document.getElementById('closeModalBtn').addEventListener('click', () => {
