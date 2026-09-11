@@ -311,7 +311,11 @@ function getStoredCourses() {
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      // 若資料存在且第一筆含必要欄位（防止舊版快取資料造成課表空白）
+      if (Array.isArray(parsed) && parsed.length > 0 &&
+          parsed[0].day !== undefined && parsed[0].periodStart !== undefined) {
+        return parsed;
+      }
     } catch(e) {}
   }
   localStorage.setItem('demo_courses', JSON.stringify(COURSES));
@@ -394,7 +398,10 @@ let ITEMS_PER_PAGE = 9;
 function getEnrolledCourseIds() {
   const saved = localStorage.getItem('demo_enrolled_courses');
   if (saved) {
-    try { return JSON.parse(saved); } catch(e) {}
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch(e) {}
   }
   return [...DEFAULT_ENROLLED_IDS];
 }
@@ -1236,13 +1243,11 @@ window.cancelOverrideApplication = function(courseId) {
 };
 
 function updateAllViews() {
-  updateCourseStatusData();
   renderCourseGrid();
   renderTimetableGrid();
-  renderSelectedSummaryList();
+  updateTimetableContent();
   renderFrontAnnouncements();
-  updateCreditProgressBar();
-  renderPendingOverridesSection();
+  updateCreditDashboard();
 }
 
 // Event Listeners for Filters
