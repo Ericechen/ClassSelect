@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>選課系統管理員後台 | CourseSelect Admin</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="admin-body">
+
+  <div class="admin-layout-wrapper">
+
+    <!-- 側邊欄遮罩層 (Mobile Backdrop) -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- 1. 左側垂直導覽列 (Admin Sidebar) -->
+    <aside class="admin-sidebar">
+      <!-- 品牌標頭 -->
+      <div class="sidebar-brand">
+        <span class="admin-badge-tag">ADMIN</span>
+        <div class="brand-title">選課管理控制台</div>
+      </div>
+
+      <!-- 分類垂直導覽選單 -->
+      <nav class="sidebar-menu">
+
+        <!-- 大分類 1: 課程設定 -->
+        <div class="menu-category-group">
+          <div class="category-header">課程設定</div>
+          <a href="#class-setup" class="sidebar-item active" data-admin-tab="tab-class-setup">
+            <span>本學期開課與名額管理</span>
+          </a>
+        </div>
+
+        <!-- 大分類 2: 基礎與規則 -->
+        <div class="menu-category-group">
+          <div class="category-header">基礎與規則</div>
+          <a href="#announcements" class="sidebar-item" data-admin-tab="tab-announcements">
+            <span>系統公告發布與管理</span>
+          </a>
+          <a href="#grade-rules" class="sidebar-item" data-admin-tab="tab-grade-rules">
+            <span>分年級學分硬規則控制</span>
+          </a>
+        </div>
+
+        <!-- 大分類 3: 覆寫與加簽 -->
+        <div class="menu-category-group">
+          <div class="category-header">覆寫與加簽</div>
+          <a href="#roster-override" class="sidebar-item" data-admin-tab="tab-roster-override" data-scroll-target="override-queue-section">
+            <span>學生線上加簽審核區</span>
+          </a>
+        </div>
+
+        <!-- 大分類 4: 前台跳轉 -->
+        <div class="menu-category-group" style="margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+          <a href="index.html" class="sidebar-item front-link-item">
+            <span>返回學生選課前台</span>
+          </a>
+        </div>
+
+      </nav>
+    </aside>
+
+    <!-- 2. 右側主內容區塊 (Main Content Area) -->
+    <div class="admin-main-content">
+
+      <!-- 頂部 Topbar -->
+      <header class="admin-topbar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button class="mobile-hamburger-btn" id="adminMobileMenuToggle" aria-label="切換導覽選單">
+            ☰
+          </button>
+          <div class="topbar-title" id="topbarTitle">控制台總覽 / 課程與名額管理</div>
+        </div>
+        <div class="user-badge admin-user-badge">
+          <span>教務處課務組 <strong>林管理員</strong></span>
+        </div>
+      </header>
+
+      <main class="admin-container">
+
+        <!-- 頂部概覽統計卡片 -->
+        <div class="admin-stats-grid">
+          <div class="admin-stat-card">
+            <div class="stat-label">本學期開課總數</div>
+            <div class="stat-value" id="statTotalCourses">0</div>
+            <div class="stat-desc">涵蓋資訊、電機、通識等開課實例</div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="stat-label">系統公告總數</div>
+            <div class="stat-value" id="statTotalAnnouncements">0</div>
+            <div class="stat-desc" id="statAnnouncementsDesc">已即時同步發布至學生前台首頁</div>
+          </div>
+
+          <div class="admin-stat-card">
+            <div class="stat-label">待審核線上加簽</div>
+            <div class="stat-value" id="statPendingOverrides">0</div>
+            <div class="stat-desc">來自學生前台發起之強塞加簽申請</div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 模組 1：基礎開課與名額模組 (Class & Quota Setup) -->
+        <!-- ========================================== -->
+        <section class="admin-tab-view active" id="tab-class-setup">
+          <div class="admin-section-header">
+            <div>
+              <h2>本學期開課與名額管理</h2>
+              <p>建立與維護本學期課程實例、指派授課教師、設定單一容納上限 (Hard Cap)</p>
+            </div>
+            <button class="btn-primary" id="openAddCourseBtn">+ 新增本學期課程</button>
+          </div>
+
+          <!-- 課程表格與過濾列 -->
+          <div class="admin-card">
+            <div class="admin-filter-bar">
+              <input type="text" id="adminSearchInput" class="admin-input" style="max-width: 320px;" placeholder="搜尋課號、課名或授課教師...">
+              <select id="adminDeptFilter" class="admin-select" style="max-width: 180px;">
+                <option value="ALL">全部開課系所</option>
+                <option value="資訊工程學系">資訊工程學系</option>
+                <option value="電機工程學系">電機工程學系</option>
+                <option value="通識教育中心">通識教育中心</option>
+              </select>
+              <select id="adminCategoryFilter" class="admin-select" style="max-width: 150px;">
+                <option value="ALL">全部修課類別</option>
+                <option value="REQUIRED">系定必修</option>
+                <option value="ELECTIVE">專業選修</option>
+                <option value="GENERAL">通識核心</option>
+              </select>
+            </div>
+
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>課號</th>
+                    <th>課程名稱</th>
+                    <th>開課系所</th>
+                    <th>類別 / 學分</th>
+                    <th>授課教師</th>
+                    <th>上課時間 / 教室</th>
+                    <th>容納上限 (Hard Cap)</th>
+                    <th>已選 / 狀態</th>
+                    <th style="text-align: center;">操作選項</th>
+                  </tr>
+                </thead>
+                <tbody id="adminCourseTableBody">
+                  <!-- JS 動態渲染 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 模組 2：系統公告發布與管理 -->
+        <!-- ========================================== -->
+        <section class="admin-tab-view" id="tab-announcements">
+          <div class="admin-section-header">
+            <div>
+              <h2>系統公告發布與管理</h2>
+              <p>在此發布與維護選課公告、注意事項與課程異動，發布後即時同步展示於學生前台首頁</p>
+            </div>
+            <button class="btn-primary" id="openAddAnnouncementBtn">+ 發布新公告</button>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th style="width: 120px;">發布日期</th>
+                    <th style="width: 120px;">分類標籤</th>
+                    <th style="width: 260px;">公告標題</th>
+                    <th>內文摘要</th>
+                    <th style="text-align: center; width: 90px;">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="announcementTableBody">
+                  <!-- JS 動態渲染公告列表 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 模組 3：分年級學分硬規則控制 -->
+        <!-- ========================================== -->
+        <section class="admin-tab-view" id="tab-grade-rules">
+          <div class="admin-section-header">
+            <div>
+              <h2>分年級學生學分硬規則控制</h2>
+              <p>依據真實大學選課機制，設定不同年級與學制單學期的最高與最低學分限制門檻</p>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <form id="gradeCreditRulesForm" class="admin-form-stack">
+              <div class="admin-table-wrapper">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>年級 / 學制分類</th>
+                      <th>單學期最低學分下限 (Min)</th>
+                      <th>單學期最高學分上限 (Max)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="font-weight: 600;">大一 (Grade 1)</td>
+                      <td><input type="number" id="minG1" class="admin-input" value="16" min="0" max="30" style="max-width: 160px;" required></td>
+                      <td><input type="number" id="maxG1" class="admin-input" value="25" min="1" max="40" style="max-width: 160px;" required></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: 600;">大二 (Grade 2)</td>
+                      <td><input type="number" id="minG2" class="admin-input" value="16" min="0" max="30" style="max-width: 160px;" required></td>
+                      <td><input type="number" id="maxG2" class="admin-input" value="25" min="1" max="40" style="max-width: 160px;" required></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: 600;">大三 (Grade 3)</td>
+                      <td><input type="number" id="minG3" class="admin-input" value="15" min="0" max="30" style="max-width: 160px;" required></td>
+                      <td><input type="number" id="maxG3" class="admin-input" value="25" min="1" max="40" style="max-width: 160px;" required></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: 600;">大四 / 應屆畢業生 (Grade 4)</td>
+                      <td><input type="number" id="minG4" class="admin-input" value="9" min="0" max="30" style="max-width: 160px;" required></td>
+                      <td><input type="number" id="maxG4" class="admin-input" value="27" min="1" max="40" style="max-width: 160px;" required></td>
+                    </tr>
+                    <tr>
+                      <td style="font-weight: 600;">研究所 (碩博士班 Graduate)</td>
+                      <td><input type="number" id="minGRAD" class="admin-input" value="3" min="0" max="30" style="max-width: 160px;" required></td>
+                      <td><input type="number" id="maxGRAD" class="admin-input" value="18" min="1" max="40" style="max-width: 160px;" required></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div style="text-align: right; margin-top: 18px;">
+                <button type="submit" class="btn-primary" style="padding: 8px 20px;">儲存分年級學分規則設定</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- 模組 3：行政覆寫與加簽模組 (Override & Application Queue) -->
+        <!-- ========================================== -->
+        <section class="admin-tab-view" id="tab-roster-override">
+          <div class="admin-section-header">
+            <div>
+              <h2>行政覆寫與線上加簽審核區</h2>
+              <p>審核學生前台發起之強塞加簽申請、支援管理員手動權限覆寫強塞名額</p>
+            </div>
+            <button class="btn-primary accent" id="openForceEnrollBtn">+ 管理員手動強塞加簽</button>
+          </div>
+
+          <!-- 學生線上加簽申請審核區 -->
+          <div class="admin-card" id="override-queue-section">
+            <div class="card-head-title">
+              <h3>學生線上加簽申請審核區</h3>
+              <span class="status-pill pending" id="pendingQueueBadge">0 件待審核</span>
+            </div>
+            <p class="admin-card-desc">
+              當課程容量已達上限 (FULL) 時，學生可於前台發起線上加簽申請。管理員可於此處進行人工審核，一鍵「核准強塞」或「拒絕」。
+            </p>
+
+            <div class="admin-table-wrapper">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>申請課程</th>
+                    <th>申請學生</th>
+                    <th>加簽申請事由</th>
+                    <th>申請時間</th>
+                    <th>當前課程狀態</th>
+                    <th style="text-align: center;">審核操作</th>
+                  </tr>
+                </thead>
+                <tbody id="overrideQueueTableBody">
+                  <!-- JS 動態渲染待審核案件 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+    </div>
+  </div>
+
+  <!-- Modal 1: 新增 / 編輯課程 Modal -->
+  <div class="modal-overlay" id="courseEditModal">
+    <div class="apple-modal" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 id="courseModalTitle">新增本學期課程實例</h3>
+        <button class="modal-close-icon" id="closeCourseModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="courseForm" class="admin-form-stack">
+          <input type="hidden" id="editCourseIsNew" value="true">
+          
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label class="admin-label">課號 (ID)</label>
+              <input type="text" id="courseIdInput" class="admin-input" placeholder="例如: CS308" required>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">課程名稱 (中文)</label>
+              <input type="text" id="courseNameInput" class="admin-input" placeholder="例如: 人工智慧導論" required>
+            </div>
+          </div>
+
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label class="admin-label">英文課程名稱</label>
+              <input type="text" id="courseEnglishNameInput" class="admin-input" placeholder="Introduction to AI">
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">開課系所</label>
+              <select id="courseDepartmentInput" class="admin-select" required>
+                <option value="資訊工程學系">資訊工程學系</option>
+                <option value="電機工程學系">電機工程學系</option>
+                <option value="通識教育中心">通識教育中心</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label class="admin-label">修課類別</label>
+              <select id="courseCategoryInput" class="admin-select" required>
+                <option value="REQUIRED">系定必修 (REQUIRED)</option>
+                <option value="ELECTIVE">專業選修 (ELECTIVE)</option>
+                <option value="GENERAL">通識核心 (GENERAL)</option>
+              </select>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">學分數</label>
+              <input type="number" id="courseCreditsInput" class="admin-input" value="3" min="1" max="6" required>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">容量上限 Hard Cap</label>
+              <input type="number" id="courseCapacityInput" class="admin-input" value="50" min="1" max="200" required>
+            </div>
+          </div>
+
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label class="admin-label">授課教師</label>
+              <input type="text" id="courseTeacherInput" class="admin-input" placeholder="教授姓名" required>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">授課地點 / 教室</label>
+              <input type="text" id="courseRoomInput" class="admin-input" placeholder="例如: R301 (資訊館)" required>
+            </div>
+          </div>
+
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label class="admin-label">上課星期</label>
+              <select id="courseDayInput" class="admin-select" required>
+                <option value="1">週一</option>
+                <option value="2">週二</option>
+                <option value="3">週三</option>
+                <option value="4">週四</option>
+                <option value="5">週五</option>
+              </select>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">開始節次 (1-8)</label>
+              <input type="number" id="courseStartInput" class="admin-input" value="3" min="1" max="8" required>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">結束節次 (1-8)</label>
+              <input type="number" id="courseEndInput" class="admin-input" value="4" min="1" max="8" required>
+            </div>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-label">先修科目限制 (Prerequisite)</label>
+            <input type="text" id="coursePrereqInput" class="admin-input" placeholder="例如: 程式設計 (一)、資料結構 (無先修填: 無先修限制)">
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-label">課程簡介 / 大綱</label>
+            <textarea id="courseSyllabusInput" class="admin-textarea" rows="2" placeholder="簡述課程教學目標與內容..."></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="cancelCourseModalBtn">取消</button>
+            <button type="submit" class="btn-primary">儲存課程資訊</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: 管理員人工強塞名額 Modal -->
+  <div class="modal-overlay" id="forceEnrollModal">
+    <div class="apple-modal" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3>管理員人工強塞名額 (Force Enroll)</h3>
+        <button class="modal-close-icon" id="closeForceModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--color-body-muted); font-size: 14px; margin-bottom: 16px;">
+          此操作為管理員權限覆寫。特定學生將直接加入修課名冊，並自動無視課程人數上限與學分限制。
+        </p>
+        <form id="forceEnrollForm" class="admin-form-stack">
+          <div class="admin-form-group">
+            <label class="admin-label">目標加選課程</label>
+            <select id="forceCourseSelect" class="admin-select" required>
+              <!-- JS 填入 -->
+            </select>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-label">學生學號</label>
+            <input type="text" id="forceStudentIdInput" class="admin-input" placeholder="例如: 110590888" required>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-label">學生姓名</label>
+            <input type="text" id="forceStudentNameInput" class="admin-input" placeholder="例如: 張大明" required>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-label">院系年級</label>
+            <input type="text" id="forceStudentDeptInput" class="admin-input" placeholder="例如: 資工四B" value="資工三A">
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="cancelForceModalBtn">取消</button>
+            <button type="submit" class="btn-primary accent">⚡ 強制加進名冊</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: 發布系統公告 Modal -->
+  <div class="modal-overlay" id="announcementModal">
+    <div class="apple-modal" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3>發布全校選課系統公告</h3>
+        <button class="modal-close-icon" id="closeAnnouncementModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="announcementForm" class="admin-form-stack">
+          <div class="admin-form-group">
+            <label class="admin-label">公告標題</label>
+            <input type="text" id="annTitleInput" class="admin-input" placeholder="例如: 114學年度第一學期初選登記說明" required>
+          </div>
+
+          <div class="admin-form-row">
+            <div class="admin-form-group">
+              <label class="admin-label">分類標籤</label>
+              <select id="annCategoryInput" class="admin-select" required>
+                <option value="重要公告">重要公告 (URGENT)</option>
+                <option value="課程異動">課程異動 (COURSE)</option>
+                <option value="通識須知">通識須知 (GENERAL)</option>
+                <option value="選課規則">選課規則 (RULES)</option>
+              </select>
+            </div>
+            <div class="admin-form-group">
+              <label class="admin-label">發布日期</label>
+              <input type="date" id="annDateInput" class="admin-input" required>
+            </div>
+          </div>
+
+          <div class="admin-form-group">
+            <label class="admin-label">公告內文說明</label>
+            <textarea id="annBodyInput" class="admin-textarea" rows="4" placeholder="輸入詳細公告內容，發布後將即時展示於學生前台首頁..." required></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="cancelAnnouncementModalBtn">取消</button>
+            <button type="submit" class="btn-primary">發布至前台首頁</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="adminToast" class="admin-toast"></div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

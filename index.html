@@ -14,7 +14,7 @@
       選課系統 CourseSelect
     </div>
 
-    <!-- 頂部 Navbar 四大分頁 -->
+    <!-- 頂部 Navbar 四大分頁與後台快捷連結 -->
     <nav class="nav-tabs">
       <a href="#home" class="nav-tab-item active" data-tab="tab-home">
         首頁 (公告與消息)
@@ -28,10 +28,19 @@
       <a href="#faq" class="nav-tab-item" data-tab="tab-faq">
         常見問題與規則
       </a>
+      <a href="admin.html" class="admin-switch-tab" style="color: #F2765E; font-weight: 700; background-color: rgba(242, 118, 94, 0.15); border: 1px solid rgba(242, 118, 94, 0.4); border-radius: var(--radius-pill); padding: 6px 14px; margin-left: 12px; text-decoration: none; font-size: 13.5px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+        管理員後台
+      </a>
     </nav>
 
-    <div class="user-badge">
-      <span>資工三A <strong>王小明</strong> (110590012)</span>
+    <div class="user-badge" style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 13px; color: var(--color-body-muted);">測試身份：</span>
+      <select id="studentSwitcherSelect" class="admin-select" style="padding: 4px 8px; font-size: 13px; font-weight: 600; width: auto; border-radius: var(--radius-pill); border: 1px solid var(--color-hairline); cursor: pointer;" title="切換測試學生身份與年級">
+        <option value="資工三A 王小明 110590012">資工三A 王小明 (大三)</option>
+        <option value="資工一A 張小華 112590005">資工一A 張小華 (大一)</option>
+        <option value="資工四B 李大同 109590088">資工四B 李大同 (大四/應屆)</option>
+        <option value="資工碩一 陳大研 113590001">資工碩一 陳大研 (碩士生)</option>
+      </select>
     </div>
   </header>
 
