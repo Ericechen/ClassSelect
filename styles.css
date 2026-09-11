@@ -486,9 +486,270 @@ body {
   font-weight: 600;
 }
 
-.schedule-block .room {
+/* Search Page Two-Column Layout with Left Sidebar */
+.search-page-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.search-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+}
+
+.sidebar-credit-panel {
+  background-color: var(--color-canvas-white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-hairline);
+  padding: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.sidebar-credit-panel .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.sidebar-credit-panel .panel-header h3 {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.sidebar-credit-panel .total-badge {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+}
+
+.search-credit-bar-outer {
+  width: 100%;
+  height: 9px;
+  background-color: var(--color-divider-soft);
+  border-radius: var(--radius-pill);
+  position: relative;
+  overflow: hidden;
+}
+
+.search-credit-bar-inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background-color: var(--color-primary);
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+  transition: width var(--transition-normal);
+  z-index: 2;
+}
+
+.search-credit-bar-wishlist {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background-color: #F57F17;
+  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.3), rgba(255,255,255,0.3) 4px, transparent 4px, transparent 8px);
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  transition: left var(--transition-normal), width var(--transition-normal);
+  z-index: 1;
+}
+
+.credit-limit-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  color: var(--color-body-muted);
+  margin-top: 6px;
+}
+
+.credit-bar-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.credit-bar-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.credit-bar-legend .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.credit-bar-legend .dot-enrolled {
+  background-color: var(--color-primary);
+}
+
+.credit-bar-legend .dot-wishlist {
+  background-color: #F57F17;
+}
+
+.sidebar-credit-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.side-credit-card {
+  background-color: #F8F9FA;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  transition: border-color var(--transition-fast);
+}
+
+.side-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.side-card-top .cat-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.side-card-top .count-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.side-card-desc {
+  font-size: 11.5px;
+  color: var(--color-body-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.desc-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.mini-tag {
   font-size: 10px;
-  opacity: 0.85;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.mini-tag.enrolled {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.mini-tag.wishlist {
+  background-color: #FFF3E0;
+  color: #E65100;
+  border: 1px dashed #FFE0B2;
+}
+
+.sidebar-group-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-ink);
+  padding: 4px 2px 2px 2px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-group-title.wishlist {
+  color: #E65100;
+  margin-top: 6px;
+}
+
+.sidebar-enrolled-section {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-divider-soft);
+}
+
+.sidebar-enrolled-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sidebar-enrolled-header h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.sidebar-enrolled-header span {
+  font-size: 12px;
+  color: var(--color-body-muted);
+}
+
+.sidebar-course-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.sidebar-course-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background-color: #F8F9FA;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-divider-soft);
+  font-size: 12.5px;
+}
+
+.sidebar-course-item .c-name {
+  font-weight: 600;
+  color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.sidebar-course-item .c-meta {
+  font-size: 11px;
+  color: var(--color-body-muted);
+}
+
+@media (max-width: 1024px) {
+  .search-page-layout {
+    flex-direction: column;
+  }
+  
+  .search-sidebar {
+    width: 100%;
+  }
 }
 
 /* Tab 2: Course Search View */
@@ -611,6 +872,16 @@ body {
   color: var(--color-status-danger);
 }
 
+.status-pill.pending {
+  background-color: #EDE7F6;
+  color: #512DA8;
+}
+
+.status-pill.wishlist {
+  background-color: #FFF8E1;
+  color: #F57F17;
+}
+
 .course-title-main {
   font-family: var(--font-display);
   font-size: 18px;
@@ -694,6 +965,43 @@ body {
   height: 100%;
   background-color: var(--color-primary);
   border-radius: var(--radius-pill);
+}
+
+.schedule-block.wishlist {
+  background-color: rgba(255, 248, 225, 0.85);
+  border: 1.5px dashed #F57F17 !important;
+  color: #E65100;
+  box-shadow: none;
+}
+
+.schedule-block.wishlist.conflict {
+  background-color: rgba(255, 235, 238, 0.9) !important;
+  border: 1.5px dashed #D32F2F !important;
+  color: #C62828 !important;
+}
+
+.btn-wishlist {
+  background-color: #FFF8E1;
+  color: #D84315;
+  border: 1px solid #FFE082;
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-wishlist.active {
+  background-color: #F57F17;
+  color: #FFFFFF;
+  border-color: #F57F17;
+}
+
+.btn-wishlist:active {
+  transform: scale(0.95);
 }
 
 /* Pagination Control Bar Style */

@@ -309,7 +309,7 @@ const DEFAULT_ENROLLED_IDS = ['CS301', 'CS303', 'CS304', 'GE101', 'CS305', 'CS30
 let currentPage = 1;
 const ITEMS_PER_PAGE = 9;
 
-// LocalStorage State
+// LocalStorage State (Enrolled, Wishlist, Pending Overrides)
 function getEnrolledCourseIds() {
   const saved = localStorage.getItem('demo_enrolled_courses');
   if (saved) {
@@ -322,7 +322,36 @@ function saveEnrolledCourseIds(ids) {
   localStorage.setItem('demo_enrolled_courses', JSON.stringify(ids));
 }
 
+function getWishlistCourseIds() {
+  const saved = localStorage.getItem('demo_wishlist_courses');
+  if (saved) {
+    try { return JSON.parse(saved); } catch(e) {}
+  }
+  return ['EE201']; // default 1 pre-selected course for demo
+}
+
+function saveWishlistCourseIds(ids) {
+  localStorage.setItem('demo_wishlist_courses', JSON.stringify(ids));
+}
+
+function getPendingOverrides() {
+  const saved = localStorage.getItem('demo_pending_overrides');
+  if (saved) {
+    try { return JSON.parse(saved); } catch(e) {}
+  }
+  return {};
+}
+
+function savePendingOverrides(overrides) {
+  localStorage.setItem('demo_pending_overrides', JSON.stringify(overrides));
+}
+
 let enrolledIds = getEnrolledCourseIds();
+let wishlistIds = getWishlistCourseIds();
+let pendingOverrides = getPendingOverrides();
+
+let courseToDropId = null;
+let overrideCourseId = null;
 
 // Tab Switcher Logic
 window.switchTab = function(tabId) {
@@ -393,9 +422,13 @@ function updateTimetableContent() {
   });
 
   const enrolledCourses = COURSES.filter(c => enrolledIds.includes(c.id));
+  const pendingWishlistCount = wishlistIds.filter(id => !enrolledIds.includes(id)).length;
   const homeCountEl = document.getElementById('homeEnrolledCount');
-  if (homeCountEl) homeCountEl.textContent = `已排 ${enrolledCourses.length} 門課程`;
+  if (homeCountEl) {
+    homeCountEl.textContent = `已排 ${enrolledCourses.length} 門課程` + (pendingWishlistCount > 0 ? ` (${pendingWishlistCount} 門預排中)` : '');
+  }
 
+  // 1. Draw Enrolled Courses (Solid)
   enrolledCourses.forEach(course => {
     for (let p = course.periodStart; p <= course.periodEnd; p++) {
       const cell = timetableGrid.querySelector(`.grid-cell[data-day="${course.day}"][data-period="${p}"]`);
@@ -419,14 +452,47 @@ function updateTimetableContent() {
       }
     }
   });
+
+  // 2. Draw Wishlist Courses (Dashed) & Highlight Conflicts
+  const wishlistCourses = COURSES.filter(c => wishlistIds.includes(c.id) && !enrolledIds.includes(c.id));
+  wishlistCourses.forEach(course => {
+    const isConflictWithEnrolled = enrolledCourses.some(ec => ec.day === course.day && Math.max(ec.periodStart, course.periodStart) <= Math.min(ec.periodEnd, course.periodEnd));
+    const isConflictWithOtherWishlist = wishlistCourses.some(wc => wc.id !== course.id && wc.day === course.day && Math.max(wc.periodStart, course.periodStart) <= Math.min(wc.periodEnd, course.periodEnd));
+    const isConflict = isConflictWithEnrolled || isConflictWithOtherWishlist;
+
+    for (let p = course.periodStart; p <= course.periodEnd; p++) {
+      const cell = timetableGrid.querySelector(`.grid-cell[data-day="${course.day}"][data-period="${p}"]`);
+      if (cell) {
+        if (cell.children.length === 0) {
+          if (p === course.periodStart) {
+            const block = document.createElement('div');
+            block.className = `schedule-block wishlist ${isConflict ? 'conflict' : ''}`;
+            block.innerHTML = `
+              <div class="title">${isConflict ? '⚠️【衝堂】' : '【預排】'}${course.name}</div>
+              <div class="room">${course.timeText}</div>
+            `;
+            cell.appendChild(block);
+          } else {
+            const block = document.createElement('div');
+            block.className = `schedule-block wishlist ${isConflict ? 'conflict' : ''}`;
+            block.style.opacity = '0.6';
+            cell.appendChild(block);
+          }
+        } else if (isConflictWithEnrolled) {
+          cell.classList.add('conflict-flash');
+        }
+      }
+    }
+  });
 }
 
-// Update Credit Dashboards
+// Update Credit Dashboards & Enrolled Table Actions
 function updateCreditDashboard() {
   const enrolledCourses = COURSES.filter(c => enrolledIds.includes(c.id));
+  const wishlistCourses = COURSES.filter(c => wishlistIds.includes(c.id) && !enrolledIds.includes(c.id));
   
+  // 1. Enrolled credits
   let total = 0, req = 0, ele = 0, gen = 0;
-
   enrolledCourses.forEach(c => {
     total += c.credits;
     if (c.category === 'REQUIRED') req += c.credits;
@@ -434,6 +500,16 @@ function updateCreditDashboard() {
     if (c.category === 'GENERAL') gen += c.credits;
   });
 
+  // 2. Wishlist (Pre-planned) credits
+  let wishTotal = 0, wishReq = 0, wishEle = 0, wishGen = 0;
+  wishlistCourses.forEach(c => {
+    wishTotal += c.credits;
+    if (c.category === 'REQUIRED') wishReq += c.credits;
+    if (c.category === 'ELECTIVE') wishEle += c.credits;
+    if (c.category === 'GENERAL') wishGen += c.credits;
+  });
+
+  // Tab 1 Big Numbers
   const reqBig = document.getElementById('creditReqBig');
   if (reqBig) reqBig.textContent = `${req} / 12`;
 
@@ -442,6 +518,167 @@ function updateCreditDashboard() {
 
   const genBig = document.getElementById('creditGenBig');
   if (genBig) genBig.textContent = `${gen} / 4`;
+
+  // Update Tab 2 Search Left Sidebar Credit Elements
+  const searchTotalBadge = document.getElementById('searchTotalBadge');
+  if (searchTotalBadge) {
+    if (wishTotal > 0) {
+      searchTotalBadge.innerHTML = `${total} <span style="font-size: 11px; color: #E65100; font-weight: 700;">(+${wishTotal} 預排)</span> / 25 學分`;
+    } else {
+      searchTotalBadge.textContent = `${total} / 25 學分`;
+    }
+  }
+
+  // Dual progress bar
+  const enrolledPct = Math.min(100, Math.round((total / 25) * 100));
+  const wishPct = Math.min(100 - enrolledPct, Math.round((wishTotal / 25) * 100));
+
+  const searchTotalProgressBar = document.getElementById('searchTotalProgressBar');
+  if (searchTotalProgressBar) searchTotalProgressBar.style.width = `${enrolledPct}%`;
+
+  const searchWishlistProgressBar = document.getElementById('searchWishlistProgressBar');
+  if (searchWishlistProgressBar) {
+    searchWishlistProgressBar.style.left = `${enrolledPct}%`;
+    searchWishlistProgressBar.style.width = `${wishPct}%`;
+  }
+
+  const legendEnrolledText = document.getElementById('legendEnrolledText');
+  if (legendEnrolledText) legendEnrolledText.textContent = `${total} 已選`;
+
+  const legendWishlistWrapper = document.getElementById('legendWishlistWrapper');
+  const legendWishlistText = document.getElementById('legendWishlistText');
+  if (legendWishlistWrapper && legendWishlistText) {
+    if (wishTotal > 0) {
+      legendWishlistWrapper.style.display = 'flex';
+      legendWishlistText.textContent = `+${wishTotal} 預排`;
+    } else {
+      legendWishlistWrapper.style.display = 'none';
+    }
+  }
+
+  // Category card 1: 系定必修
+  const sideReqVal = document.getElementById('sideReqVal');
+  if (sideReqVal) {
+    sideReqVal.innerHTML = wishReq > 0 
+      ? `${req} <span style="font-size: 11px; color: #E65100; font-weight: 700;">(+${wishReq})</span> / 12` 
+      : `${req} / 12`;
+  }
+  const sideReqDesc = document.getElementById('sideReqDesc');
+  if (sideReqDesc) {
+    const reqEnrolled = enrolledCourses.filter(c => c.category === 'REQUIRED').map(c => c.name);
+    const reqWishlist = wishlistCourses.filter(c => c.category === 'REQUIRED').map(c => c.name);
+    let descHtml = '';
+    if (reqEnrolled.length > 0) {
+      descHtml += `<div class="desc-line"><span class="mini-tag enrolled">已選</span>${reqEnrolled.join('、')}</div>`;
+    }
+    if (reqWishlist.length > 0) {
+      descHtml += `<div class="desc-line"><span class="mini-tag wishlist">預排</span>${reqWishlist.join('、')}</div>`;
+    }
+    if (descHtml === '') descHtml = '尚未選取必修課程';
+    sideReqDesc.innerHTML = descHtml;
+  }
+
+  // Category card 2: 專業選修
+  const sideEleVal = document.getElementById('sideEleVal');
+  if (sideEleVal) {
+    sideEleVal.innerHTML = wishEle > 0 
+      ? `${ele} <span style="font-size: 11px; color: #E65100; font-weight: 700;">(+${wishEle})</span> / 9` 
+      : `${ele} / 9`;
+  }
+  const sideEleDesc = document.getElementById('sideEleDesc');
+  if (sideEleDesc) {
+    const eleEnrolled = enrolledCourses.filter(c => c.category === 'ELECTIVE').map(c => c.name);
+    const eleWishlist = wishlistCourses.filter(c => c.category === 'ELECTIVE').map(c => c.name);
+    let descHtml = '';
+    if (eleEnrolled.length > 0) {
+      descHtml += `<div class="desc-line"><span class="mini-tag enrolled">已選</span>${eleEnrolled.join('、')}</div>`;
+    }
+    if (eleWishlist.length > 0) {
+      descHtml += `<div class="desc-line"><span class="mini-tag wishlist">預排</span>${eleWishlist.join('、')}</div>`;
+    }
+    if (descHtml === '') descHtml = '尚未選取選修課程';
+    sideEleDesc.innerHTML = descHtml;
+  }
+
+  // Category card 3: 通識核心
+  const sideGenVal = document.getElementById('sideGenVal');
+  if (sideGenVal) {
+    sideGenVal.innerHTML = wishGen > 0 
+      ? `${gen} <span style="font-size: 11px; color: #E65100; font-weight: 700;">(+${wishGen})</span> / 4` 
+      : `${gen} / 4`;
+  }
+  const sideGenDesc = document.getElementById('sideGenDesc');
+  if (sideGenDesc) {
+    const genEnrolled = enrolledCourses.filter(c => c.category === 'GENERAL').map(c => c.name);
+    const genWishlist = wishlistCourses.filter(c => c.category === 'GENERAL').map(c => c.name);
+    let descHtml = '';
+    if (genEnrolled.length > 0) {
+      descHtml += `<div class="desc-line"><span class="mini-tag enrolled">已選</span>${genEnrolled.join('、')}</div>`;
+    }
+    if (genWishlist.length > 0) {
+      descHtml += `<div class="desc-line"><span class="mini-tag wishlist">預排</span>${genWishlist.join('、')}</div>`;
+    }
+    if (descHtml === '') descHtml = '尚未選取通識課程';
+    sideGenDesc.innerHTML = descHtml;
+  }
+
+  // Header count text
+  const sideEnrolledCount = document.getElementById('sideEnrolledCount');
+  if (sideEnrolledCount) {
+    sideEnrolledCount.textContent = `${enrolledCourses.length} 已選` + (wishlistCourses.length > 0 ? ` · ${wishlistCourses.length} 預排` : '');
+  }
+
+  // Sidebar Course List (Grouped)
+  const sidebarCourseList = document.getElementById('sidebarCourseList');
+  if (sidebarCourseList) {
+    if (enrolledCourses.length === 0 && wishlistCourses.length === 0) {
+      sidebarCourseList.innerHTML = `<div style="font-size: 12px; color: var(--color-body-muted); text-align: center; padding: 12px 0;">無已選或預排課程</div>`;
+    } else {
+      let listHtml = '';
+      if (enrolledCourses.length > 0) {
+        listHtml += `<div class="sidebar-group-title"><span>📌 已選課程</span> <span>${total} 學分</span></div>`;
+        enrolledCourses.forEach(c => {
+          listHtml += `
+            <div class="sidebar-course-item">
+              <div>
+                <div class="c-name" title="${c.name}">${c.name}</div>
+                <div class="c-meta">${c.categoryName} · ${c.credits}學分</div>
+              </div>
+              <button class="btn-danger" style="padding: 2px 8px; font-size: 11px;" onclick="promptDropCourse('${c.id}')">退選</button>
+            </div>
+          `;
+        });
+      }
+      if (wishlistCourses.length > 0) {
+        listHtml += `<div class="sidebar-group-title wishlist"><span>⭐️ 預排關注課程</span> <span>${wishTotal} 學分</span></div>`;
+        wishlistCourses.forEach(c => {
+          const isConflictWithEnrolled = enrolledCourses.some(ec => ec.day === c.day && Math.max(ec.periodStart, c.periodStart) <= Math.min(ec.periodEnd, c.periodEnd));
+          const isConflictWithOtherWishlist = wishlistCourses.some(wc => wc.id !== c.id && wc.day === c.day && Math.max(wc.periodStart, c.periodStart) <= Math.min(wc.periodEnd, c.periodEnd));
+          const isConflict = isConflictWithEnrolled || isConflictWithOtherWishlist;
+
+          const conflictBadgeHtml = isConflict ? `<span style="font-size: 10px; color: #D32F2F; background-color: #FFEBEE; padding: 1px 4px; border-radius: 3px; margin-left: 4px; font-weight: 700;">⚠️ 衝堂</span>` : '';
+          const cardStyle = isConflict 
+            ? `border: 1.5px dashed #D32F2F; background-color: #FFEBEE;` 
+            : `border: 1px dashed #F57F17; background-color: #FFF8E1;`;
+          const titleColor = isConflict ? `#C62828` : `#E65100`;
+
+          listHtml += `
+            <div class="sidebar-course-item" style="${cardStyle}">
+              <div>
+                <div class="c-name" style="color: ${titleColor};" title="${c.name}">【預排】${c.name}${conflictBadgeHtml}</div>
+                <div class="c-meta">${c.timeText} · ${c.credits}學分</div>
+              </div>
+              <div style="display: flex; gap: 4px;">
+                <button class="btn-primary" style="padding: 2px 8px; font-size: 11px;" onclick="addCourse('${c.id}')">加選</button>
+                <button class="btn-secondary" style="padding: 2px 6px; font-size: 11px; color: var(--color-body-muted);" onclick="toggleWishlist('${c.id}')">✕</button>
+              </div>
+            </div>
+          `;
+        });
+      }
+      sidebarCourseList.innerHTML = listHtml;
+    }
+  }
 
   const tableContainer = document.getElementById('enrolledTableContainer');
   if (tableContainer) {
@@ -461,6 +698,7 @@ function updateCreditDashboard() {
             <th style="padding: 10px;">學分</th>
             <th style="padding: 10px;">授課教師</th>
             <th style="padding: 10px;">時段與地點</th>
+            <th style="padding: 10px; text-align: center;">操作</th>
           </tr>
         </thead>
         <tbody>
@@ -475,6 +713,12 @@ function updateCreditDashboard() {
           <td style="padding: 12px 10px; font-weight: 600; color: var(--color-primary);">${c.credits}</td>
           <td style="padding: 12px 10px;">${c.teacher}</td>
           <td style="padding: 12px 10px; color: var(--color-body-muted);">${c.timeText} (${c.room})</td>
+          <td style="padding: 12px 10px; text-align: center;">
+            <div style="display: flex; gap: 6px; justify-content: center;">
+              <button class="btn-secondary" style="padding: 4px 10px; font-size: 12px;" onclick="openCourseDetail('${c.id}')">細節</button>
+              <button class="btn-danger" style="padding: 4px 10px; font-size: 12px;" onclick="promptDropCourse('${c.id}')">退選</button>
+            </div>
+          </td>
         </tr>
       `;
     });
@@ -495,11 +739,11 @@ const filterStatus = document.getElementById('filterStatus');
 function renderCourseGrid() {
   if (!courseGridContainer) return;
 
-  const keyword = searchInput.value.trim().toLowerCase();
-  const deptFilter = filterDepartment.value;
-  const categoryFilter = filterCategory.value;
+  const keyword = searchInput ? searchInput.value.trim().toLowerCase() : '';
+  const deptFilter = filterDepartment ? filterDepartment.value : 'ALL';
+  const categoryFilter = filterCategory ? filterCategory.value : 'ALL';
   const dayFilter = filterDay ? filterDay.value : 'ALL';
-  const statusFilter = filterStatus.value;
+  const statusFilter = filterStatus ? filterStatus.value : 'ALL';
 
   const filtered = COURSES.filter(course => {
     const matchKeyword = !keyword || course.name.toLowerCase().includes(keyword) || course.englishName.toLowerCase().includes(keyword) || course.teacher.toLowerCase().includes(keyword) || course.id.toLowerCase().includes(keyword);
@@ -527,12 +771,36 @@ function renderCourseGrid() {
 
   pageCourses.forEach(course => {
     const isEnrolled = enrolledIds.includes(course.id);
+    const isWishlist = wishlistIds.includes(course.id);
+    const isPendingOverride = !!pendingOverrides[course.id];
     const isFull = course.status === 'FULL';
     const percent = Math.round((course.enrolled / course.capacity) * 100);
 
     let statusPillClass = 'available';
+    let statusText = course.statusText;
     if (course.status === 'WARNING') statusPillClass = 'warning';
     if (course.status === 'FULL') statusPillClass = 'full';
+    
+    if (isPendingOverride) {
+      statusPillClass = 'pending';
+      statusText = '加簽審核中';
+    } else if (isWishlist && !isEnrolled) {
+      statusPillClass = 'wishlist';
+      statusText = '已預排關注';
+    }
+
+    let actionBtnHtml = '';
+    if (isEnrolled) {
+      actionBtnHtml = `<button class="btn-danger" onclick="promptDropCourse('${course.id}')">退選</button>`;
+    } else if (isPendingOverride) {
+      actionBtnHtml = `<button class="btn-secondary" onclick="cancelOverrideApplication('${course.id}')">取消加簽</button>`;
+    } else if (isFull) {
+      actionBtnHtml = `<button class="btn-primary accent" onclick="openOverrideModal('${course.id}')">申請加簽</button>`;
+    } else {
+      actionBtnHtml = `<button class="btn-primary" onclick="addCourse('${course.id}')">加選</button>`;
+    }
+
+    const wishlistBtnHtml = !isEnrolled ? `<button class="btn-wishlist ${isWishlist ? 'active' : ''}" onclick="toggleWishlist('${course.id}')">${isWishlist ? '★ 已預排' : '☆ 預排'}</button>` : '';
 
     const card = document.createElement('div');
     card.className = 'course-card-item';
@@ -540,7 +808,7 @@ function renderCourseGrid() {
       <div>
         <div class="card-top">
           <span class="dept-code-tag">${course.department} · ${course.id} · ${course.categoryName} (${course.credits}學分)</span>
-          <span class="status-pill ${statusPillClass}">${course.statusText}</span>
+          <span class="status-pill ${statusPillClass}">${statusText}</span>
         </div>
         
         <div class="course-title-main">${course.name} <span style="font-size: 13.5px; font-weight: 400; color: var(--color-body-muted);">${course.englishName}</span></div>
@@ -569,12 +837,9 @@ function renderCourseGrid() {
           </div>
         </div>
         <div class="card-actions">
-          <button class="btn-secondary" onclick="openCourseDetail('${course.id}')">查看細節</button>
-          ${
-            isEnrolled 
-              ? `<button class="btn-danger" onclick="dropCourse('${course.id}')">退選</button>`
-              : `<button class="btn-primary" ${isFull ? 'disabled' : ''} onclick="addCourse('${course.id}')">${isFull ? '已額滿' : '加選'}</button>`
-          }
+          <button class="btn-secondary" onclick="openCourseDetail('${course.id}')">細節</button>
+          ${wishlistBtnHtml}
+          ${actionBtnHtml}
         </div>
       </div>
     `;
@@ -613,6 +878,8 @@ window.openCourseDetail = function(courseId) {
   if (!course) return;
 
   const isEnrolled = enrolledIds.includes(course.id);
+  const isWishlist = wishlistIds.includes(course.id);
+  const isPendingOverride = !!pendingOverrides[course.id];
   const isFull = course.status === 'FULL';
 
   document.getElementById('detailDeptCode').textContent = `${course.department} · ${course.id} · ${course.categoryName} (${course.credits} 學分)`;
@@ -620,8 +887,16 @@ window.openCourseDetail = function(courseId) {
   document.getElementById('detailSubtitle').textContent = `114學年度第1學期 · ${course.credits} 學分`;
 
   const statusPill = document.getElementById('detailStatusPill');
-  statusPill.textContent = course.statusText;
-  statusPill.className = `status-pill ${course.status === 'WARNING' ? 'warning' : (course.status === 'FULL' ? 'full' : 'available')}`;
+  if (isPendingOverride) {
+    statusPill.textContent = '加簽審核中';
+    statusPill.className = 'status-pill pending';
+  } else if (isWishlist && !isEnrolled) {
+    statusPill.textContent = '已預排關注';
+    statusPill.className = 'status-pill wishlist';
+  } else {
+    statusPill.textContent = course.statusText;
+    statusPill.className = `status-pill ${course.status === 'WARNING' ? 'warning' : (course.status === 'FULL' ? 'full' : 'available')}`;
+  }
 
   document.getElementById('detailTeacher').textContent = course.teacher;
   document.getElementById('detailTimeRoom').textContent = `${course.room} · ${course.timeText}`;
@@ -637,10 +912,16 @@ window.openCourseDetail = function(courseId) {
   document.getElementById('detailTextbook').textContent = course.textbook || '授課教師隨堂提供講義與講稿';
 
   const actionContainer = document.getElementById('detailActionBtnContainer');
+  const wishlistBtnHtml = !isEnrolled ? `<button class="btn-wishlist ${isWishlist ? 'active' : ''}" onclick="toggleWishlist('${course.id}'); openCourseDetail('${course.id}');">${isWishlist ? '★ 已預排' : '☆ 加入預排'}</button>` : '';
+
   if (isEnrolled) {
-    actionContainer.innerHTML = `<button class="btn-danger" onclick="dropCourse('${course.id}'); closeCourseDetail();">退選此課程</button>`;
+    actionContainer.innerHTML = `<button class="btn-danger" onclick="promptDropCourse('${course.id}'); closeCourseDetail();">退選此課程</button>`;
+  } else if (isPendingOverride) {
+    actionContainer.innerHTML = `${wishlistBtnHtml} <button class="btn-secondary" onclick="cancelOverrideApplication('${course.id}'); closeCourseDetail();">取消加簽申請</button>`;
+  } else if (isFull) {
+    actionContainer.innerHTML = `${wishlistBtnHtml} <button class="btn-primary accent" onclick="openOverrideModal('${course.id}'); closeCourseDetail();">申請線上加簽</button>`;
   } else {
-    actionContainer.innerHTML = `<button class="btn-primary" ${isFull ? 'disabled' : ''} onclick="addCourse('${course.id}'); closeCourseDetail();">${isFull ? '已額滿' : '加選'}</button>`;
+    actionContainer.innerHTML = `${wishlistBtnHtml} <button class="btn-primary" onclick="addCourse('${course.id}'); closeCourseDetail();">加選此課程</button>`;
   }
 
   document.getElementById('detailModal').classList.add('active');
@@ -661,12 +942,78 @@ document.querySelectorAll('.modal-overlay').forEach(modal => {
   });
 });
 
-// Add Course Action (with Conflict Checking)
+// Toggle Wishlist Action (with Conflict Checking)
+window.toggleWishlist = function(courseId) {
+  const course = COURSES.find(c => c.id === courseId);
+  if (!course) return;
+
+  if (wishlistIds.includes(courseId)) {
+    wishlistIds = wishlistIds.filter(id => id !== courseId);
+  } else {
+    const enrolledCourses = COURSES.filter(c => enrolledIds.includes(c.id));
+    const wishlistCourses = COURSES.filter(c => wishlistIds.includes(c.id) && !enrolledIds.includes(c.id));
+
+    // 1. 與已選課程時段衝堂檢查
+    const conflictingEnrolled = enrolledCourses.find(c => {
+      if (c.day === course.day) {
+        return Math.max(c.periodStart, course.periodStart) <= Math.min(c.periodEnd, course.periodEnd);
+      }
+      return false;
+    });
+
+    if (conflictingEnrolled) {
+      document.getElementById('modalMessage').innerHTML = `無法將【<strong>${course.name}</strong>】加入預排。<br>該課程時段（${course.timeText}）與已選課程【<strong>${conflictingEnrolled.name}</strong>】發生時段衝突！`;
+      document.getElementById('conflictModal').classList.add('active');
+
+      for (let p = course.periodStart; p <= course.periodEnd; p++) {
+        const cell = timetableGrid.querySelector(`.grid-cell[data-day="${course.day}"][data-period="${p}"]`);
+        if (cell) cell.classList.add('conflict-flash');
+      }
+      return;
+    }
+
+    // 2. 與其他已預排課程時段衝堂檢查
+    const conflictingWishlist = wishlistCourses.find(c => {
+      if (c.day === course.day) {
+        return Math.max(c.periodStart, course.periodStart) <= Math.min(c.periodEnd, course.periodEnd);
+      }
+      return false;
+    });
+
+    if (conflictingWishlist) {
+      document.getElementById('modalMessage').innerHTML = `無法將【<strong>${course.name}</strong>】加入預排。<br>該課程時段（${course.timeText}）與已預排課程【<strong>${conflictingWishlist.name}</strong>】發生時段衝突！`;
+      document.getElementById('conflictModal').classList.add('active');
+
+      for (let p = course.periodStart; p <= course.periodEnd; p++) {
+        const cell = timetableGrid.querySelector(`.grid-cell[data-day="${course.day}"][data-period="${p}"]`);
+        if (cell) cell.classList.add('conflict-flash');
+      }
+      return;
+    }
+
+    wishlistIds.push(courseId);
+  }
+  saveWishlistCourseIds(wishlistIds);
+  updateAllViews();
+};
+
+// Add Course Action (with Max Credit 25 & Conflict Checking & Prerequisite Warning)
 window.addCourse = function(courseId) {
   const course = COURSES.find(c => c.id === courseId);
   if (!course) return;
 
   const enrolledCourses = COURSES.filter(c => enrolledIds.includes(c.id));
+
+  // 1. Max Credit limit check (25 Credits)
+  const currentCredits = enrolledCourses.reduce((sum, c) => sum + c.credits, 0);
+  if (currentCredits + course.credits > 25) {
+    document.getElementById('warningModalTitle').textContent = '無法加選 (學分超過上限)';
+    document.getElementById('warningModalMessage').innerHTML = `無法加選【<strong>${course.name}</strong>】（${course.credits} 學分）。<br>加選後總學分（${currentCredits + course.credits} 分）將超過本學期最高上限 <strong>25 學分</strong>！<br>若因特殊情況需超修，請向教務處課務組提出學分超修申請。`;
+    document.getElementById('warningModal').classList.add('active');
+    return;
+  }
+
+  // 2. Conflict checking
   const conflicting = enrolledCourses.find(c => {
     if (c.day === course.day) {
       return Math.max(c.periodStart, course.periodStart) <= Math.min(c.periodEnd, course.periodEnd);
@@ -685,14 +1032,99 @@ window.addCourse = function(courseId) {
     return;
   }
 
+  // 3. Prerequisite Warning (Friendly Notice for Demo)
+  if (course.prereq && course.prereq !== '無先修限制' && course.prereq !== '無先修限制 (適合全校學生)') {
+    document.getElementById('warningModalTitle').textContent = '先修科目提醒';
+    document.getElementById('warningModalMessage').innerHTML = `提示：【<strong>${course.name}</strong>】設有先修科目要求：<br><span style="color: var(--color-primary); font-weight: 600;">${course.prereq}</span><br><br>課程已成功加入您的課表，請確認您具備相關先修科目背景。`;
+    document.getElementById('warningModal').classList.add('active');
+  }
+
+  // Remove from wishlist if added to enrolled
+  if (wishlistIds.includes(courseId)) {
+    wishlistIds = wishlistIds.filter(id => id !== courseId);
+    saveWishlistCourseIds(wishlistIds);
+  }
+
   enrolledIds.push(courseId);
   saveEnrolledCourseIds(enrolledIds);
   updateAllViews();
 };
 
-window.dropCourse = function(courseId) {
-  enrolledIds = enrolledIds.filter(id => id !== courseId);
-  saveEnrolledCourseIds(enrolledIds);
+// Drop Course Confirmation Workflow
+window.promptDropCourse = function(courseId) {
+  const course = COURSES.find(c => c.id === courseId);
+  if (!course) return;
+
+  courseToDropId = courseId;
+  const enrolledCourses = COURSES.filter(c => enrolledIds.includes(c.id));
+  const totalCreditsAfterDrop = enrolledCourses.reduce((sum, c) => sum + c.credits, 0) - course.credits;
+
+  document.getElementById('dropModalMessage').innerHTML = `您確定要退選【<strong>${course.name}</strong>】（${course.credits} 學分）嗎？`;
+  
+  const subMsg = document.getElementById('dropModalSubMessage');
+  if (totalCreditsAfterDrop < 12) {
+    subMsg.innerHTML = `⚠️ 提醒：退選後總學分（<strong>${totalCreditsAfterDrop}</strong> 學分）將低於本學期最低門檻 <strong>12 學分</strong>。`;
+    subMsg.style.display = 'block';
+  } else {
+    subMsg.style.display = 'none';
+  }
+
+  document.getElementById('dropConfirmModal').classList.add('active');
+};
+
+document.getElementById('confirmDropBtn').addEventListener('click', () => {
+  if (courseToDropId) {
+    enrolledIds = enrolledIds.filter(id => id !== courseToDropId);
+    saveEnrolledCourseIds(enrolledIds);
+    courseToDropId = null;
+    document.getElementById('dropConfirmModal').classList.remove('active');
+    updateAllViews();
+  }
+});
+
+document.getElementById('cancelDropBtn').addEventListener('click', () => {
+  courseToDropId = null;
+  document.getElementById('dropConfirmModal').classList.remove('active');
+});
+
+// Override Application Workflow
+window.openOverrideModal = function(courseId) {
+  const course = COURSES.find(c => c.id === courseId);
+  if (!course) return;
+
+  overrideCourseId = courseId;
+  document.getElementById('overrideModalCourse').textContent = `申請課程：${course.name} (${course.id}) · ${course.department}`;
+  document.getElementById('overrideReasonInput').value = '';
+  document.getElementById('overrideModal').classList.add('active');
+};
+
+document.getElementById('cancelOverrideBtn').addEventListener('click', () => {
+  overrideCourseId = null;
+  document.getElementById('overrideModal').classList.remove('active');
+});
+
+document.getElementById('submitOverrideBtn').addEventListener('click', () => {
+  if (!overrideCourseId) return;
+
+  const reason = document.getElementById('overrideReasonInput').value.trim() || '應屆畢業或課程修習需求申請線上加簽';
+  pendingOverrides[overrideCourseId] = {
+    reason: reason,
+    timestamp: new Date().toLocaleString()
+  };
+  savePendingOverrides(pendingOverrides);
+
+  overrideCourseId = null;
+  document.getElementById('overrideModal').classList.remove('active');
+  updateAllViews();
+
+  document.getElementById('warningModalTitle').textContent = '加簽申請已送出';
+  document.getElementById('warningModalMessage').innerHTML = `您的加簽申請已成功傳送至授課教師與系所辦公室。<br>當前狀態：<span class="status-pill pending">加簽審核中</span>`;
+  document.getElementById('warningModal').classList.add('active');
+});
+
+window.cancelOverrideApplication = function(courseId) {
+  delete pendingOverrides[courseId];
+  savePendingOverrides(pendingOverrides);
   updateAllViews();
 };
 
@@ -713,19 +1145,31 @@ document.getElementById('closeModalBtn').addEventListener('click', () => {
   document.getElementById('conflictModal').classList.remove('active');
 });
 
+document.getElementById('closeWarningModalBtn').addEventListener('click', () => {
+  document.getElementById('warningModal').classList.remove('active');
+});
+
 // Reset & Import Demo Buttons
 const resetBtn = document.getElementById('resetScheduleBtn');
 if (resetBtn) {
   resetBtn.addEventListener('click', () => {
     enrolledIds = [];
+    wishlistIds = [];
+    pendingOverrides = {};
     saveEnrolledCourseIds(enrolledIds);
+    saveWishlistCourseIds(wishlistIds);
+    savePendingOverrides(pendingOverrides);
     updateAllViews();
   });
 }
 
 function importDemo() {
   enrolledIds = [...DEFAULT_ENROLLED_IDS];
+  wishlistIds = ['EE201'];
+  pendingOverrides = {};
   saveEnrolledCourseIds(enrolledIds);
+  saveWishlistCourseIds(wishlistIds);
+  savePendingOverrides(pendingOverrides);
   updateAllViews();
 }
 

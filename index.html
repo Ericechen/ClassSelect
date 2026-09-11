@@ -93,7 +93,7 @@
     </div>
   </section>
 
-  <!-- 3. 分頁 2：選課 (搜尋、科系篩選、9張卡片分頁、點擊查看細節) -->
+  <!-- 3. 分頁 2：選課 (左側已選學分側邊欄 + 右側搜尋與課程 grid) -->
   <section class="tab-content-view" id="tab-search">
     <div class="view-header">
       <div>
@@ -102,50 +102,116 @@
       </div>
     </div>
 
-    <div class="apple-card">
-      <div class="search-bar-section">
-        <div class="search-input-wrapper">
-          <input type="text" class="search-input" id="searchInput" placeholder="搜尋課程名稱、授課教師、教室代號或課號...">
+    <div class="search-page-layout">
+      <!-- 左側：已選擇的學分與進度側邊欄 -->
+      <aside class="search-sidebar">
+        <div class="sidebar-credit-panel">
+          <div class="panel-header">
+            <h3>已選與預排學分</h3>
+            <span class="total-badge" id="searchTotalBadge">18 / 25 學分</span>
+          </div>
+
+          <!-- 總學分與預排進度條 (雙色區分) -->
+          <div class="total-progress-wrapper">
+            <div class="search-credit-bar-outer">
+              <div class="search-credit-bar-inner" id="searchTotalProgressBar" style="width: 72%;"></div>
+              <div class="search-credit-bar-wishlist" id="searchWishlistProgressBar" style="left: 72%; width: 12%;"></div>
+            </div>
+            <div class="credit-limit-labels">
+              <div class="credit-bar-legend">
+                <span class="legend-item"><span class="dot dot-enrolled"></span><span id="legendEnrolledText">18 已選</span></span>
+                <span class="legend-item" id="legendWishlistWrapper"><span class="dot dot-wishlist"></span><span id="legendWishlistText">+3 預排</span></span>
+              </div>
+              <span>上限 25 學分</span>
+            </div>
+          </div>
+
+          <!-- 三大類修業學分卡片 -->
+          <div class="sidebar-credit-cards">
+            <div class="side-credit-card">
+              <div class="side-card-top">
+                <span class="cat-label">系定必修</span>
+                <span class="count-val" id="sideReqVal">9 / 12</span>
+              </div>
+              <div class="side-card-desc" id="sideReqDesc">演算法、作業系統、計算機網路</div>
+            </div>
+
+            <div class="side-credit-card">
+              <div class="side-card-top">
+                <span class="cat-label">專業選修</span>
+                <span class="count-val" id="sideEleVal">6 / 9</span>
+              </div>
+              <div class="side-card-desc" id="sideEleDesc">人工智慧導論、網頁前端開發技術</div>
+            </div>
+
+            <div class="side-credit-card">
+              <div class="side-card-top">
+                <span class="cat-label">通識核心</span>
+                <span class="count-val" id="sideGenVal">3 / 4</span>
+              </div>
+              <div class="side-card-desc" id="sideGenDesc">心理學導論</div>
+            </div>
+          </div>
+
+          <!-- 即時已選與預排清單 -->
+          <div class="sidebar-enrolled-section">
+            <div class="sidebar-enrolled-header">
+              <h4>已選與預排課程</h4>
+              <span id="sideEnrolledCount">6 已選 · 1 預排</span>
+            </div>
+            <div class="sidebar-course-list" id="sidebarCourseList">
+              <!-- JS 動態繪製迷你課程清單 (分區塊呈現) -->
+            </div>
+          </div>
         </div>
-        <div class="filter-group">
-          <select class="apple-select" id="filterDepartment">
-            <option value="ALL">所有開課系所</option>
-            <option value="資訊工程學系">資訊工程學系</option>
-            <option value="電機工程學系">電機工程學系</option>
-            <option value="通識教育中心">通識教育中心</option>
-          </select>
+      </aside>
 
-          <select class="apple-select" id="filterCategory">
-            <option value="ALL">所有修業類別</option>
-            <option value="REQUIRED">系定必修</option>
-            <option value="ELECTIVE">專業選修</option>
-            <option value="GENERAL">通識核心</option>
-          </select>
+      <!-- 右側：搜尋列與課程 Grid -->
+      <div class="apple-card" style="flex: 1; min-width: 0;">
+        <div class="search-bar-section">
+          <div class="search-input-wrapper">
+            <input type="text" class="search-input" id="searchInput" placeholder="搜尋課程名稱、授課教師、教室代號或課號...">
+          </div>
+          <div class="filter-group">
+            <select class="apple-select" id="filterDepartment">
+              <option value="ALL">所有開課系所</option>
+              <option value="資訊工程學系">資訊工程學系</option>
+              <option value="電機工程學系">電機工程學系</option>
+              <option value="通識教育中心">通識教育中心</option>
+            </select>
 
-          <select class="apple-select" id="filterDay">
-            <option value="ALL">星期 (全部)</option>
-            <option value="1">週一</option>
-            <option value="2">週二</option>
-            <option value="3">週三</option>
-            <option value="4">週四</option>
-            <option value="5">週五</option>
-          </select>
+            <select class="apple-select" id="filterCategory">
+              <option value="ALL">所有修業類別</option>
+              <option value="REQUIRED">系定必修</option>
+              <option value="ELECTIVE">專業選修</option>
+              <option value="GENERAL">通識核心</option>
+            </select>
 
-          <select class="apple-select" id="filterStatus">
-            <option value="ALL">名額狀態 (全部)</option>
-            <option value="AVAILABLE">可加選</option>
-            <option value="WARNING">即將額滿</option>
-            <option value="FULL">已額滿</option>
-          </select>
+            <select class="apple-select" id="filterDay">
+              <option value="ALL">星期 (全部)</option>
+              <option value="1">週一</option>
+              <option value="2">週二</option>
+              <option value="3">週三</option>
+              <option value="4">週四</option>
+              <option value="5">週五</option>
+            </select>
+
+            <select class="apple-select" id="filterStatus">
+              <option value="ALL">名額狀態 (全部)</option>
+              <option value="AVAILABLE">可加選</option>
+              <option value="WARNING">即將額滿</option>
+              <option value="FULL">已額滿</option>
+            </select>
+          </div>
         </div>
-      </div>
 
-      <div class="course-grid" id="courseGridContainer">
-        <!-- JS 動態繪製課程卡片 -->
-      </div>
+        <div class="course-grid" id="courseGridContainer">
+          <!-- JS 動態繪製課程卡片 -->
+        </div>
 
-      <div class="pagination-container" id="paginationContainer">
-        <!-- JS 動態繪製頁碼 -->
+        <div class="pagination-container" id="paginationContainer">
+          <!-- JS 動態繪製頁碼 -->
+        </div>
       </div>
     </div>
   </section>
@@ -277,9 +343,50 @@
   <!-- 6. 衝堂警示 Modal -->
   <div class="modal-overlay" id="conflictModal">
     <div class="apple-modal">
-      <h3>時段衝堂</h3>
-      <p id="modalMessage">無法加選【資料庫系統】。該課程時段（週三 3-4 節）與已選課程【演算法】發生衝突。</p>
+      <h3 style="color: var(--color-status-danger);">時段衝堂警示</h3>
+      <p id="modalMessage" style="margin: 16px 0; color: var(--color-body-muted); line-height: 1.6;">無法加選【資料庫系統】。該課程時段與已選課程發生衝突。</p>
       <button class="btn-primary" id="closeModalBtn" style="width: 100%;">確認</button>
+    </div>
+  </div>
+
+  <!-- 6b. 一般選課提醒 / 學分上限 Modal -->
+  <div class="modal-overlay" id="warningModal">
+    <div class="apple-modal">
+      <h3 id="warningModalTitle" style="color: var(--color-primary);">選課提醒</h3>
+      <p id="warningModalMessage" style="margin: 16px 0; color: var(--color-body-muted); line-height: 1.6;">提示訊息</p>
+      <button class="btn-primary" id="closeWarningModalBtn" style="width: 100%;">我知道了</button>
+    </div>
+  </div>
+
+  <!-- 6c. 退選二次確認 Modal -->
+  <div class="modal-overlay" id="dropConfirmModal">
+    <div class="apple-modal">
+      <h3 style="color: var(--color-status-danger);">退選課程確認</h3>
+      <p id="dropModalMessage" style="margin: 14px 0 6px 0; color: var(--color-ink); font-weight: 600;">您確定要退選【演算法】嗎？</p>
+      <p id="dropModalSubMessage" style="margin-bottom: 20px; font-size: 13.5px; color: var(--color-status-warning); display: none;">⚠️ 提醒：退選後總學分將低於最低門檻 12 學分。</p>
+      <div class="card-actions" style="justify-content: center; gap: 12px; margin-top: 20px;">
+        <button class="btn-secondary" id="cancelDropBtn" style="padding: 8px 20px;">取消</button>
+        <button class="btn-danger" id="confirmDropBtn" style="padding: 8px 20px;">確定退選</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6d. 額滿加簽申請 Modal -->
+  <div class="modal-overlay" id="overrideModal">
+    <div class="apple-modal">
+      <h3>申請課程加簽</h3>
+      <p id="overrideModalCourse" style="font-weight: 600; color: var(--color-primary); margin-top: 4px;">課程：哲學思考與現代社會 (GE102)</p>
+      <p style="font-size: 13px; color: var(--color-body-muted); margin: 8px 0 16px 0;">本課程目前已額滿，您可以填寫加簽原因向授課教師與系所提出線上加簽申請。</p>
+      
+      <div style="text-align: left; margin-bottom: 16px;">
+        <label for="overrideReasonInput" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--color-ink);">加簽理由 / 事由說明：</label>
+        <textarea id="overrideReasonInput" rows="4" style="width: 100%; padding: 10px 12px; border-radius: var(--radius-md); border: 1px solid var(--color-hairline); font-family: var(--font-body); font-size: 13.5px; resize: vertical;" placeholder="例如：應屆畢業生需補足通識核心學分 / 與專題研究高度相關..."></textarea>
+      </div>
+
+      <div class="card-actions" style="justify-content: flex-end; gap: 10px;">
+        <button class="btn-secondary" id="cancelOverrideBtn">取消</button>
+        <button class="btn-primary" id="submitOverrideBtn">送出加簽申請</button>
+      </div>
     </div>
   </div>
 
